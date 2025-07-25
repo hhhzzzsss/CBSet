@@ -1,0 +1,61 @@
+package com.github.hhhzzzsss.cbset;
+
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.fabricmc.api.ModInitializer;
+
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class CBSet implements ModInitializer {
+	public static final String MOD_ID = "cbset";
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+	@Override
+	public void onInitialize() {
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			dispatcher.register(getCommand());
+		});
+	}
+
+	private LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {
+		return ClientCommandManager.literal("cbset").then(
+			ClientCommandManager.argument("position", ClientBlockPosArgument.blockPos()).then(
+				ClientCommandManager.argument("mode", CommandBlockModeArgument.commandBlockMode()).then(
+					ClientCommandManager.argument("auto", BoolArgumentType.bool()).then(
+						ClientCommandManager.argument("conditional", BoolArgumentType.bool()).then(
+							ClientCommandManager.argument("trackOutput", BoolArgumentType.bool()).then(
+								ClientCommandManager.argument("command", StringArgumentType.greedyString()).executes( ctx -> {
+									setCommandBlock(
+										ctx.getArgument("position", BlockPos.class),
+										ctx.getArgument("command", String.class),
+										ctx.getArgument("mode", NamedMode.class).getMode(),
+										ctx.getArgument("trackOutput", Boolean.class),
+										ctx.getArgument("conditional", Boolean.class),
+										ctx.getArgument("auto", Boolean.class)
+									);
+									return 1;
+								})
+							)
+						)
+					)
+				)
+			)
+		);
+	}
+
+	private void setCommandBlock(BlockPos bp, String command, CommandBlockEntity.Mode mode, boolean trackOutput, boolean conditional, boolean automatic) {
+		Minecraft.getInstance().getConnection().send(
+			new ServerboundSetCommandBlockPacket(bp, command, mode, trackOutput, conditional, automatic)
+		);
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "cbset",
+	"version": "${version}",
+	"name": "CBSet",
+	"description": "Edits command blocks with a client command",
+	"authors": [
+		"hhhzzzsss"
+	],
+	"contact": {
+		"homepage": "https://github.com/hhhzzzsss",
+		"sources": "https://github.com/hhhzzzsss"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/cbset/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.github.hhhzzzsss.cbset.CBSet"
+		]
+	},
+	"mixins": [
+		"cbset.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
