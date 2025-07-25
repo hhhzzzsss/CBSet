@@ -8,8 +8,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.slf4j.Logger;
@@ -25,6 +28,8 @@ public class CBSet implements ModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			dispatcher.register(getCommand());
 		});
+
+		ClientReceiveMessageEvents.ALLOW_GAME.register((component, overlay) -> filterMessage(component));
 	}
 
 	private LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {
@@ -57,5 +62,12 @@ public class CBSet implements ModInitializer {
 		Minecraft.getInstance().getConnection().send(
 			new ServerboundSetCommandBlockPacket(bp, command, mode, trackOutput, conditional, automatic)
 		);
+	}
+
+	private boolean filterMessage(Component component) {
+		if (component.getContents() instanceof TranslatableContents contents) {
+            return !contents.getKey().equals("advMode.setCommand.success");
+		}
+		return true;
 	}
 }
